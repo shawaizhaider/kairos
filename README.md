@@ -4,8 +4,11 @@ This repository contains the hardware-software co-design of a custom 32-core Sin
 
 The architecture features a custom 32-bit Instruction Set Architecture (ISA), a 3072-bit L1 fabric register cache, hardware double-buffering, and a decoupled 48kHz audio/720p video pipeline orchestrated by the ARM Cortex-A9 Processing System (PS).
 
-## Repository Structure
+https://github.com/user-attachments/assets/b7488102-da05-4da7-b471-b0032c6120ac
 
+
+## Repository Structure
+```
 .
 ├── assembler/      # Python script for translating custom ISA to machine code
 ├── bd/             # Tcl scripts to automatically regenerate the Zynq Block Design
@@ -19,7 +22,7 @@ The architecture features a custom 32-bit Instruction Set Architecture (ISA), a 
 ├── scripts/        # Master build automation scripts (build.tcl)
 ├── sim/            # Behavioral simulation testbenches
 └── sw/             # Bare-metal C code for the ARM PS and A/V synchronization
-
+```
 ## Prerequisites
 * Hardware: Xilinx ZC706 Evaluation Board, SD Card (FAT32)
 * Software: Xilinx Vivado 2018.2 (Required for block diagram compatibility, minimal tweaking required for other versions) & Xilinx SDK, FFmpeg
@@ -42,7 +45,7 @@ In case you are using any version except 2018.2, the script will not work out of
 ## 2. Media Preparation
 Because this GPU utilizes raw Direct Memory Access (DMA) without an operating system, it cannot decode standard `.mp4` or `.mkv` files. Thus, you have to use `ffmpeg` to extract the raw, headerless video and audio streams into `.BIN` files before placing them on the SD card.
 
-Assuming your input file is named `input.mp4`:
+Assuming input file is named `input.mp4`:
 
 ### 2.1 Generate VIDEO.BIN
 The VDMA expects a continuous stream of raw 24-bit color pixels at 1280x720 resolution and exactly 25 FPS. 
