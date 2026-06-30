@@ -1,0 +1,123 @@
+#################################
+#      720p MANDELBROT GPU      #
+#      32 MACs / 24-bit FP      #
+#################################
+
+# Step 1: Set up mesh of grid points to render
+xor 0 0               # [ADDR 0]
+addi 2 0 720          # [ADDR 1] HEIGHT
+addi 3 0 1280         # [ADDR 2] WIDTH
+addi 4 0 -45634027    # [ADDR 3, 4] X_MIN = -2.72 (Centers the 16:9 aspect ratio)
+addi 5 0 63           # [ADDR 5] MAX_ITERS
+addi 6 0 -20971520    # [ADDR 6, 7] Y_MIN = -1.25
+addi 7 0 58254        # [ADDR 8, 9] DX = 0.0034722
+addi 12 0 58254       # [ADDR 10, 11] DY = 0.0034722
+addi 13 0 1864128     # [ADDR 12, 13] DY * 32 FMAs
+
+# [ADDR 14] FRAME LOOP START
+nop                   
+xor 14 14             
+
+# [ADDR 16] X LOOP INITIALIZATION
+xor 8 8               
+addi 10 4 0           
+
+# [ADDR 18] X LOOP CONDITION
+bge 8 3               
+jump @68              # Jump to X LOOP END (fbswap)
+
+# [ADDR 20] Y LOOP INITIALIZATION
+xor 9 9               
+addi 11 6 0           
+
+# [ADDR 22] Y LOOP CONDITION
+bge 9 2               
+jump @64              # Jump to Y LOOP END (increment X)
+
+# Y LOOP INNER LOGIC
+load 0 0 0            
+load 1 0 0            
+load 2 10 0           
+write 1 1             
+
+load 2 11 12          
+write 1 1             
+
+load 0 10 0           
+load 1 10 0           
+load 2 0 0            
+write 1 0             
+load 0 11 12          
+load 1 11 12          
+write 0 1             
+nop                   
+
+addi 15 0 0           
+
+# [ADDR 39] MANDELBROT INNER LOOP CONDITION
+bge 15 5              
+jump @58              # Jump to MANDELBROT INNER LOOP END
+
+# MANDELBROT INNER LOGIC
+loadb 1 1 0           
+load 2 10 0           
+write 1 0             
+
+loadb -2 2 0          
+write 0 1             
+
+loadb 4 2 0           
+load 2 11 12          
+write 1 1             
+
+loadb 1 1 0           
+write 1 0             
+loadb 2 2 0           
+write 0 1             
+nop                   
+
+or 15                 
+addi 15 15 1          
+bge 0 0               
+jump @39              # Jump back to MANDELBROT CONDITION
+
+# [ADDR 58] MANDELBROT INNER LOOP END
+senditers 8 9         
+
+add 11 11 13          
+addi 14 14 32         # Increment by 32 FMAs
+addi 9 9 32           # Increment by 32 FMAs
+bge 0 0               
+jump @22              # Jump back to Y LOOP CONDITION
+
+# [ADDR 64] Y LOOP END
+add 10 10 7           
+addi 8 8 1            
+bge 0 0               
+jump @18              # Jump back to X LOOP CONDITION
+
+# [ADDR 68] X LOOP END
+fbswap                
+pause                 
+
+# ZOOM LOGIC CONSTANTS
+addi 4 4 2752930      # Nudge X right (+0.1640875)
+addi 6 6 1273637      # Nudge Y up (+0.0759125)
+addi 7 7 -4096        # Decrease DX safely
+addi 12 12 -4096      # Decrease DY safely
+
+# Recalculate DY * 32 mathematically
+addi 13 0 0           
+add 13 13 12          # = 1*DY
+add 13 13 13          # = 2*DY
+add 13 13 13          # = 4*DY
+add 13 13 13          # = 8*DY
+add 13 13 13          # = 16*DY
+add 13 13 13          # = 32*DY
+
+bge 0 12              # If DY <= 0, restart
+jump @0               
+
+bge 0 0               
+jump @14              # Render next frame
+end

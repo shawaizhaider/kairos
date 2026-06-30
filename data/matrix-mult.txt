@@ -1,0 +1,44 @@
+# 2x2 matrix multiply using 32-lane SIMD and 8.24 fixed point
+# Lanes 0/1 correspond to rows [1 2] and [3 4]; other lanes follow the same pattern
+
+xor 0 0
+addi 1 0 5f   # col1 top (5.0)
+addi 2 0 7f   # col1 bottom (7.0)
+addi 3 0 6f   # col2 top (6.0)
+addi 4 0 8f   # col2 bottom (8.0)
+addi 5 0 1f   # row base (1.0)
+addi 6 0 2f   # row base (2.0)
+addi 7 0 2f   # row step (row2-row1)
+addi 8 0 0f   # zero
+
+# Column 1 dot product
+load 0 1 8
+load 1 5 7
+load 2 8 8
+write 1 1
+
+load 0 2 8
+load 1 6 7
+write 0 1
+
+load 0 8 8
+load 1 8 8
+load 2 8 8
+write 1 1
+
+# Column 2 dot product
+load 0 3 8
+load 1 5 7
+load 2 8 8
+write 1 1
+
+load 0 4 8
+load 1 6 7
+write 0 1
+
+load 0 8 8
+load 1 8 8
+load 2 8 8
+write 1 1
+
+end
